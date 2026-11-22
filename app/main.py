@@ -1,6 +1,7 @@
 import logging
 import os
 import time 
+from app import models
 from fastapi import FastAPI, Request
 from app.database import create_db_and_tables
 
