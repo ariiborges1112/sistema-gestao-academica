@@ -5,7 +5,7 @@ class CursoCreate(SQLModel):
     nome : str
 
 class CursoUpdate(SQLModel):
-    nome : str
+    nome : str | None = None
 
 class CursoRead(SQLModel):
     id : int 
