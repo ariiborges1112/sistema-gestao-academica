@@ -4,7 +4,7 @@ class ProfessorCreate(SQLModel):
     nome: str
     email: str
 
-class ProfesorUpdate(SQLModel):
+class ProfessorUpdate(SQLModel):
     nome: str | None = None
     email: str | None = None
 
