@@ -2,8 +2,7 @@ from datetime import date
 from fastapi import HTTPException
 from sqlalchemy import func
 from sqlmodel import Session, select
-from sqlalchemy.orm import Session
-from app.models import Curso, Disciplina, Estudante, Matricula, StatusMatricula, Professor, Turma
+from app.models import Estudante, Matricula, StatusMatricula, Turma
 
 STATUS_QUE_OCUPAM_VAGA = (
     StatusMatricula.ATIVA, 
@@ -23,5 +22,8 @@ def contar_vagas_ocupadas(session: Session, turma_id: int) -> int:
         )
     )
     
-    resultado = session.exec(consulta).one()
-    return resultado.len()
+    total = session.exec(consulta).one()
+    return total
+
+def matricular():
+    
