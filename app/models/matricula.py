@@ -7,7 +7,6 @@ from sqlmodel import SQLModel, Field
 class StatusMatricula(str, Enum):
     ATIVA = "ATIVA"
     CANCELADA = "CANCELADA"
-    CONCLUIDA = "CONCLUIDA"
     APROVADA = "APROVADA"
     REPROVADA = "REPROVADA"
 
