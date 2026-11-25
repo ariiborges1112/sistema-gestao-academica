@@ -76,7 +76,7 @@ def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula
     matricula_ativa = session.exec(consulta_ativa).first()
 
     if matricula_ativa is not None:
-        raise HTTPException(status_code=409, detail="O estudante ja possui matricula ativa outra turma dessa disciplina")
+        raise HTTPException(status_code=409, detail="O estudante ja possui matricula ativa em outra turma dessa disciplina")
 
     vagas_ocupadas = contar_vagas_ocupadas(session, turma_id)
 

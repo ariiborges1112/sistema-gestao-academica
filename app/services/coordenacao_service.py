@@ -43,18 +43,19 @@ def resultados_da_turma(session: Session, turma_id: int) -> ResultadoTurmaRead:
         StatusMatricula.ATIVA: 0
     }
 
-    for status_mat, quantidade in session.exec(consulta).all():
-        contagem[status_mat] = quantidade
+    for status, total in session.exec(consulta).all():
+        if status in contagem:
+            contagem[status] = total
 
     return ResultadoTurmaRead(
-    turma_id=turma.id,
-    codigo_turma=turma.codigo_turma,
-    periodo=turma.periodo,
-    aprovados=contagem[StatusMatricula.APROVADA],
-    reprovados=contagem[StatusMatricula.REPROVADA],
-    cancelados=contagem[StatusMatricula.CANCELADA],
-    ativos=contagem[StatusMatricula.ATIVA],
-    total_matriculas=sum(contagem.values()),
+        turma_id=turma.id,
+        codigo_turma=turma.codigo_turma,
+        periodo=turma.periodo,
+        aprovados=contagem[StatusMatricula.APROVADA],
+        reprovados=contagem[StatusMatricula.REPROVADA],
+        cancelados=contagem[StatusMatricula.CANCELADA],
+        ativos=contagem[StatusMatricula.ATIVA],
+        total_matriculas=sum(contagem.values()),
     )
 
 def listar_oferta_do_periodo(session: Session, periodo: str) -> list[OfertaPeriodoRead]:
