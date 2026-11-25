@@ -70,3 +70,21 @@ def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula
     session.refresh(nova_matricula)
     
     return nova_matricula
+
+def cancelar(session: Session, matricula_id: int) -> Matricula:
+    matricula = session.get(Matricula, matricula_id)
+
+    if matricula is None:
+        raise HTTPException(status_code=404, detail="Matricula inexistente")
+
+    if matricula.status != StatusMatricula.ATIVA:
+        raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ser canceladas")
+
+    matricula.status = StatusMatricula.CANCELADA
+    matricula.data_cancelamento = date.today()
+
+    session.add(matricula)
+    session.commit()
+    session.refresh(matricula)
+
+    return matricula
