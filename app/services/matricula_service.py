@@ -149,3 +149,6 @@ def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
 
     return matricula
 
+def buscar_matricula(session: Session, matricula_id: int) -> Matricula:
+    return _tentar_buscar_matricula(session, matricula_id)
+
