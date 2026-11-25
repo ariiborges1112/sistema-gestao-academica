@@ -30,6 +30,11 @@ def resultados_da_turma(session: Session, turma_id: int) -> ResultadoTurmaRead:
     if turma is None:
         raise HTTPException(status_code=404, detail="Turma não encontrada")
 
+    disciplina = session.get(Disciplina, turma.disciplina_id)
+
+    if disciplina is None:
+        raise HTTPException(status_code=404, detail="Disciplina não encontrada")
+
     consulta = (
         select(Matricula.status, func.count())
         .where(Matricula.turma_id == turma_id)
@@ -51,6 +56,8 @@ def resultados_da_turma(session: Session, turma_id: int) -> ResultadoTurmaRead:
         turma_id=turma.id,
         codigo_turma=turma.codigo_turma,
         periodo=turma.periodo,
+        codigo_disciplina=disciplina.codigo,
+        nome_disciplina=disciplina.nome,
         aprovados=contagem[StatusMatricula.APROVADA],
         reprovados=contagem[StatusMatricula.REPROVADA],
         cancelados=contagem[StatusMatricula.CANCELADA],
