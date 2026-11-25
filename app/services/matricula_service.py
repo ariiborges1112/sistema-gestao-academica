@@ -88,3 +88,25 @@ def cancelar(session: Session, matricula_id: int) -> Matricula:
     session.refresh(matricula)
 
     return matricula
+
+def lancar_desempenho(session: Session, matricula_id: int, nota: float | None, 
+                      frequencia: float | None) -> Matricula:
+    matricula = session.get(Matricula, matricula_id)
+
+    if matricula is None:
+        raise HTTPException(status_code=404, detail="Matricula inexistente")
+
+    if matricula.status != StatusMatricula.ATIVA:
+        raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ter notas e frequencia lançadas")
+    
+    if nota is not None:
+        matricula.nota = nota
+
+    if frequencia is not None:
+        matricula.frequencia = frequencia
+
+    session.add(matricula)
+    session.commit()
+    session.refresh(matricula)
+
+    return matricula
