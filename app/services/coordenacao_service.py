@@ -97,3 +97,14 @@ def listar_professores_da_disciplina(session: Session, disciplina_id: int) -> li
     )
 
     return list(session.exec(consulta).all())
+
+def obter_professor_da_turma(session: Session, turma_id: int) -> Professor:
+    turma = session.get(Turma, turma_id)
+    if turma is None:
+        raise HTTPException(status_code=404, detail="Turma não encontrada")
+
+    professor = session.get(Professor, turma.professor_id)
+    if professor is None:
+        raise HTTPException(status_code=404, detail="Professor não encontrado")
+
+    return professor
