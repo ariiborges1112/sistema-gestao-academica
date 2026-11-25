@@ -21,6 +21,15 @@ def listar_cursos(session: Session = Depends(get_session)):
     cursos = session.exec(select(Curso)).all()
     return cursos
 
+@router.get("/{curso_id}", response_model=CursoRead)
+def buscar_curso(curso_id: int, session: Session = Depends(get_session)):
+    curso = session.get(Curso, curso_id)
+    if curso is None:
+        raise HTTPException(status_code=404, detail="Curso não encontrado")
+    return curso
+
+
+
 
 
 
