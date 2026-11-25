@@ -1,6 +1,7 @@
 from datetime import date
 from fastapi import HTTPException
 from sqlmodel import Session, select, func
+from sqlalchemy.exc import IntegrityError
 from app.models import Estudante, Matricula, StatusMatricula, Turma
 
 STATUS_QUE_OCUPAM_VAGA = (
@@ -22,6 +23,9 @@ def _tentar_buscar_matricula(session: Session, matricula_id: int) -> Matricula:
 def _confirmar_transacao(session: Session) -> None:
     try:
         session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=409, detail="Conflito de integridade no banco de dados (registro duplicado ou invalido)")
     except Exception:
         session.rollback()
         raise
@@ -171,7 +175,7 @@ def obter_vagas(session: Session, turma_id: int) -> dict:
 
 def listar_matriculas(session: Session, estudante_id: int | None = None,
                       turma_id: int | None = None, periodo: str | None = None,
-                      status: StatusMatricula | None = None, limite: int = 20,
+                      status: StatusMatricula | None = None, limite: int = 50,
                       deslocamento: int = 0) -> list[Matricula]:
     if limite < 1 or limite > 100:
         raise HTTPException(status_code=400, detail="O limite deve estar entre 1 e 100")
