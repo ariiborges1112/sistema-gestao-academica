@@ -33,12 +33,12 @@ def contar_vagas_ocupadas(session: Session, turma_id: int) -> int:
 def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula:
     estudante = session.get(Estudante, estudante_id)
     
-    if not estudante:
+    if estudante is None:
         raise HTTPException(status_code=404, detail="Estudante não encontrado")
  
     turma = session.get(Turma, turma_id)
 
-    if not turma:
+    if turma is None:
         raise HTTPException(status_code=404, detail="Turma não encontrada")
 
     consulta_duplicada = select(Matricula).where(
@@ -167,3 +167,24 @@ def obter_vagas(session: Session, turma_id: int) -> dict:
         "vagas_ocupadas": ocupadas,
         "vagas_disponiveis": disponiveis
     }
+
+def listar_matriculas(session: Session, estudante_id: int | None = None,
+                      turma_id: int | None = None, periodo: str | None = None,
+                      status: StatusMatricula | None = None) -> list[Matricula]:
+    consulta = select(Matricula)
+
+    if estudante_id is not None:
+        consulta = consulta.where(Matricula.estudante_id == estudante_id)
+
+    if turma_id is not None:
+        consulta = consulta.where(Matricula.turma_id == turma_id)
+
+    if status is not None:
+        consulta = consulta.where(Matricula.status == status)
+
+    if periodo is not None:
+        consulta = consulta.join(Turma, Turma.id == Matricula.turma_id).where(
+            Turma.periodo == periodo
+        )
+
+    return list(session.exec(consulta).all())
