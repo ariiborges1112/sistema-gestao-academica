@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.database import get_session
 from app.models import Disciplina, Professor, Turma
@@ -7,7 +7,6 @@ from app.schemas.turma import TurmaCreate, TurmaRead
 from app.services.matricula_service import contar_vagas_ocupadas
 
 router = APIRouter(prefix="/turmas", tags=["Turmas"])
-
 
 def _montar_turma_read(session: Session, turma: Turma) -> TurmaRead:
     ocupadas = contar_vagas_ocupadas(session, turma.id)
@@ -32,3 +31,8 @@ def criar_turma(dados: TurmaCreate, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(nova_turma)
     return _montar_turma_read(session, nova_turma)
+
+@router.get("/", response_model=list[TurmaRead])
+def listar_turmas(session: Session = Depends(get_session)):
+    consulta = select(Turma).order_by(Turma.periodo, Turma.codigo_turma)
+    return [_montar_turma_read(session, turma) for turma in session.exec(consulta).all()]
