@@ -21,12 +21,29 @@ def listar_cursos(session: Session = Depends(get_session)):
     cursos = session.exec(select(Curso)).all()
     return cursos
 
-@router.get("/{curso_id}", response_model=CursoRead)
-def buscar_curso(curso_id: int, session: Session = Depends(get_session)):
+
+@router.patch("/{curso_id}", response_model=CursoRead)
+def atualizar_curso(curso_id: int, dados: CursoUpdate, session: Session = Depends(get_session)):
     curso = session.get(Curso, curso_id)
     if curso is None:
-        raise HTTPException(status_code=404, detail="Curso não encontrado")
-    return curso
+        raise HTTPException(status_code=400, detail="Curso não encontrado")
+    campos = dados.model_dump(exclude_unset= True)
+    if "nome" in campos:
+        curso_mesmo_nome = session.exec(
+            select(Curso).where(Curso.nome == campos["nome"], Curso.id != curso_id)
+        ).first()
+        if curso_mesmo_nome is not None:
+            raise HTTPException(status_code=409, detail="Já existe um curso com esse nome")
+
+    curso.sqlmodel_update(campos)
+    session.add(curso)
+    session.commit()
+    session.refresh(curso)
+    return curso 
+
+ 
+
+
 
 
 
