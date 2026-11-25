@@ -82,3 +82,18 @@ def listar_oferta_do_periodo(session: Session, periodo: str) -> list[OfertaPerio
         )
 
     return ofertas
+
+def listar_professores_da_disciplina(session: Session, disciplina_id: int) -> list[Professor]:
+    disciplina = session.get(Disciplina, disciplina_id)
+    if disciplina is None:
+        raise HTTPException(status_code=404, detail="Disciplina não encontrada")
+
+    consulta = (
+        select(Professor)
+        .join(Turma, Turma.professor_id == Professor.id)
+        .where(Turma.disciplina_id == disciplina_id)
+        .distinct()
+        .order_by(Professor.nome)
+    )
+
+    return list(session.exec(consulta).all())
