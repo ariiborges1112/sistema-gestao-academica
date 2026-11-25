@@ -43,6 +43,12 @@ def resultados_da_turma(session: Session, turma_id: int) -> ResultadoTurmaRead:
         StatusMatricula.ATIVA: 0
     }
 
+    for status, total in session.exec(consulta).all():
+        if status in contagem:
+            contagem[status] = total
+
+    
+
     return ResultadoTurmaRead(
     turma_id=turma.id,
     codigo_turma=turma.codigo_turma,
