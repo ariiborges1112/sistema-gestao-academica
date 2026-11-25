@@ -22,9 +22,9 @@ app = FastAPI(
 app.include_router(professores.router)
 app.include_router(estudantes.router)
 
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
+#@app.on_event("startup")
+#def on_startup():
+    #create_db_and_tables()
 
 
 @app.middleware("http")
