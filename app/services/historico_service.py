@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from app.models import Curso, Disciplina, Estudante, Matricula, Professor, Turma
 from app.schemas.historico import HistoricoEstudanteRead, ItemHistoricoRead
 
-def gerar_historico(session: Session, estudante_id: int):
+def gerar_historico(session: Session, estudante_id: int) -> HistoricoEstudanteRead:
     estudante = session.get(Estudante, estudante_id)
 
     if estudante is None:
@@ -20,7 +20,7 @@ def gerar_historico(session: Session, estudante_id: int):
         .join(Disciplina, Disciplina.id == Turma.disciplina_id)
         .join(Professor, Professor.id == Turma.professor_id)
         .where(Matricula.estudante_id == estudante_id)
-        .order_by(Turma.periodo, Disciplina.codigo)
+        .order_by(Turma.periodo, Disciplina.codigo, Matricula.id)
     )
 
     linhas = session.exec(consulta).all()
