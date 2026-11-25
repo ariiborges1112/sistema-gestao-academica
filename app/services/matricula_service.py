@@ -17,6 +17,8 @@ def _tentar_buscar_matricula(session: Session, matricula_id: int) -> Matricula:
     if matricula is None:
         raise HTTPException(status_code=404, detail="Matrícula inexistente")
 
+    return matricula
+
 def contar_vagas_ocupadas(session: Session, turma_id: int) -> int:
     consulta = (
         select(func.count())
@@ -80,9 +82,6 @@ def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula
 def cancelar_matricula(session: Session, matricula_id: int) -> Matricula:
     matricula = _tentar_buscar_matricula(session, matricula_id)
 
-    if matricula is None:
-        raise HTTPException(status_code=404, detail="Matricula inexistente")
-
     if matricula.status != StatusMatricula.ATIVA:
         raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ser canceladas")
 
@@ -101,9 +100,6 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
         raise HTTPException(status_code=400, detail="Nota ou frequencia não passadas")
     
     matricula = _tentar_buscar_matricula(session, matricula_id)
-
-    if matricula is None:
-        raise HTTPException(status_code=404, detail="Matricula inexistente")
 
     if matricula.status != StatusMatricula.ATIVA:
         raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ter notas e frequencia lançadas")
@@ -128,9 +124,6 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
 
 def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
     matricula = _tentar_buscar_matricula(session, matricula_id)
-
-    if matricula is None:
-        raise HTTPException(status_code=404, detail="Matricula inexistente")
     
     if matricula.status != StatusMatricula.ATIVA:
         raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ser encerradas")
