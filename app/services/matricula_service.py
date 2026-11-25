@@ -117,8 +117,8 @@ def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
     if matricula is None:
         raise HTTPException(status_code=404, detail="Matricula inexistente")
     
-    if matricula.status == StatusMatricula.ATIVA:
-        raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ser canceladas")
+    if matricula.status != StatusMatricula.ATIVA:
+        raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ser encerradas")
 
     if matricula.nota is None or matricula.frequencia is None:
         raise HTTPException(status_code=400, detail="A nota ou/e a frequencia ainda não foram lançadas")
