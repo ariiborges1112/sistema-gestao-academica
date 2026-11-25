@@ -19,6 +19,13 @@ def _tentar_buscar_matricula(session: Session, matricula_id: int) -> Matricula:
 
     return matricula
 
+def _confirmar_transacao(session: Session) -> None:
+    try:
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+
 def contar_vagas_ocupadas(session: Session, turma_id: int) -> int:
     consulta = (
         select(func.count())
@@ -73,8 +80,9 @@ def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula
         raise HTTPException(status_code=409, detail="Turma lotada")
 
     nova_matricula = Matricula(estudante_id=estudante_id, turma_id=turma_id)
+
     session.add(nova_matricula)
-    session.commit()
+    _confirmar_transacao(session)
     session.refresh(nova_matricula)
     
     return nova_matricula
@@ -89,7 +97,7 @@ def cancelar_matricula(session: Session, matricula_id: int) -> Matricula:
     matricula.data_cancelamento = date.today()
 
     session.add(matricula)
-    session.commit()
+    _confirmar_transacao(session)
     session.refresh(matricula)
 
     return matricula
@@ -117,7 +125,7 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
         matricula.frequencia = frequencia
 
     session.add(matricula)
-    session.commit()
+    _confirmar_transacao(session)
     session.refresh(matricula)
 
     return matricula
@@ -137,7 +145,7 @@ def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
         matricula.status = StatusMatricula.REPROVADA
 
     session.add(matricula)
-    session.commit()
+    _confirmar_transacao(session)
     session.refresh(matricula)
 
     return matricula
@@ -188,5 +196,5 @@ def listar_matriculas(session: Session, estudante_id: int | None = None,
         )
 
     consulta = consulta.order_by(Matricula.id).offset(deslocamento).limit(limite)
-    
+
     return list(session.exec(consulta).all())
