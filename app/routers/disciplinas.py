@@ -5,6 +5,8 @@ from sqlmodel import Session, select
 from app.database import get_session
 from app.models import Curso, Disciplina, Turma
 from app.schemas.disciplina import DisciplinaCreate, DisciplinaRead, DisciplinaUpdate
+from app.schemas.turma import TurmaRead
+from app.services.matricula_service import contar_vagas_ocupadas
 
 router = APIRouter(prefix="/disciplinas", tags=["Disciplinas"])
 
@@ -93,3 +95,31 @@ def remover_disciplina(disciplina_id: int, session: Session = Depends(get_sessio
             status_code=409,
             detail="Não é possível remover a disciplina pois existem registros vinculados a ela.",
         )
+
+@router.get("/{disciplina_id}/turmas", response_model=list[TurmaRead])
+def listar_turmas_da_disciplina(
+    disciplina_id: int,
+    session: Session = Depends(get_session),
+):
+    disciplina = session.get(Disciplina, disciplina_id)
+    if disciplina is None:
+        raise HTTPException(status_code=404, detail="Disciplina não encontrada.")
+
+    consulta = (
+        select(Turma)
+        .where(Turma.disciplina_id == disciplina_id)
+        .order_by(Turma.periodo, Turma.codigo_turma)
+    )
+
+    turmas: list[TurmaRead] = []
+    for turma in session.exec(consulta).all():
+        ocupadas = contar_vagas_ocupadas(session, turma.id)
+        turmas.append(
+            TurmaRead(
+                **turma.model_dump(),
+                vagas_ocupadas=ocupadas,
+                vagas_disponiveis=max(0, turma.vagas - ocupadas),
+            )
+        )
+
+    return turmas
