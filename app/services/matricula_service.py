@@ -29,19 +29,23 @@ def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula
     
     if not estudante:
         raise HTTPException(status_code=404, detail="Estudante não encontrado")
-
+ 
     turma = session.get(Turma, turma_id)
 
     if not turma:
         raise HTTPException(status_code=404, detail="Turma não encontrada")
 
-    ja_matriculado = select(Matricula).where(estudante_id, turma_id)
-    session.exec(ja_matriculado).first()
+    consulta_duplicada = select(Matricula).where(
+        Matricula.estudante_id == estudante_id,
+        Matricula.turma_id == turma_id
+    )
+
+    ja_matriculado = session.exec(consulta_duplicada).first()    
 
     if ja_matriculado is not None:
         raise HTTPException(status_code=409, detail="Este aluno já está matriculado")
 
-    matricula_ativa = (
+    consulta_ativa = (
         select(Matricula)
         .join(Turma, Turma.id == Matricula.turma_id)
         .where(
@@ -49,8 +53,20 @@ def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula
             Turma.disciplina_id == turma.disciplina_id,
             Matricula.status == StatusMatricula.ATIVA
             )
-        .first()
+        )
+    matricula_ativa = session.exec(consulta_ativa).first()
 
-        is not None:
-            raise HTTPException(status_code=409, detail="")
-    )
+    if matricula_ativa is not None:
+        raise HTTPException(status_code=409, detail="O estudante ja possui matricula ativa outra turma dessa disciplina")
+
+    vagas_ocupadas = contar_vagas_ocupadas(session, turma_id)
+
+    if vagas_ocupadas >= turma.vagas:
+        raise HTTPException(status_code=409, detail="Turma lotada")
+
+    nova_matricula = Matricula(estudante_id=estudante_id, turma_id=turma_id)
+    session.add(nova_matricula)
+    session.commit()
+    session.refresh(nova_matricula)
+    
+    return nova_matricula
