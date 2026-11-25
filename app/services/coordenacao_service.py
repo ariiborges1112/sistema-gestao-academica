@@ -87,7 +87,7 @@ def listar_oferta_do_periodo(session: Session, periodo: str) -> list[OfertaPerio
                 codigo_turma=turma.codigo_turma,
                 horario=turma.horario,
                 professor=professor.nome,
-                vagas_totais=turma.vagas,
+                vagas=turma.vagas,
                 vagas_ocupadas=contar_vagas_ocupadas(session, turma.id),
             )
         )
