@@ -41,6 +41,18 @@ def atualizar_curso(curso_id: int, dados: CursoUpdate, session: Session = Depend
     session.refresh(curso)
     return curso 
 
+
+@router.delete("/{curso_id}", status_code=204)
+def remover_curso(curso_id: int, session: Session = Depends(get_session)):
+    curso = session.get(Curso, curso_id)
+    if curso is None:
+        raise HTTPException(status_code=404, detail="Curso não encontrado")
+    session.delete(curso)
+    session.commit()
+    return None
+    
+
+
  
 
 
