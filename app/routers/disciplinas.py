@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import Curso, Disciplina
+from app.models import Curso, Disciplina, Turma
 from app.schemas.disciplina import DisciplinaCreate, DisciplinaRead, DisciplinaUpdate
 
 router = APIRouter(prefix="/disciplinas", tags=["Disciplinas"])
@@ -68,3 +68,28 @@ def atualizar_disciplina(
             detail="Já existe uma disciplina cadastrada com este código.",
         )
     return disciplina
+
+@router.delete("/{disciplina_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remover_disciplina(disciplina_id: int, session: Session = Depends(get_session)):
+    disciplina = session.get(Disciplina, disciplina_id)
+    if disciplina is None:
+        raise HTTPException(status_code=404, detail="Disciplina não encontrada.")
+
+    turma_vinculada = session.exec(
+        select(Turma).where(Turma.disciplina_id == disciplina_id)
+    ).first()
+    if turma_vinculada is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Não é possível remover a disciplina pois existem turmas vinculadas a ela.",
+        )
+
+    session.delete(disciplina)
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Não é possível remover a disciplina pois existem registros vinculados a ela.",
+        )
