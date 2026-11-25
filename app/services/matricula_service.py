@@ -99,10 +99,10 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
     if matricula.status != StatusMatricula.ATIVA:
         raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ter notas e frequencia lançadas")
     
-    if nota is not None:
+    if nota is not None and nota >= 0.0 and nota <= 10.0:
         matricula.nota = nota
 
-    if frequencia is not None:
+    if frequencia is not None and frequencia >= 0.0 and frequencia <= 100.0:
         matricula.frequencia = frequencia
 
     session.add(matricula)
