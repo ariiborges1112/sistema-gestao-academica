@@ -152,3 +152,18 @@ def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
 def buscar_matricula(session: Session, matricula_id: int) -> Matricula:
     return _tentar_buscar_matricula(session, matricula_id)
 
+def obter_vagas(session: Session, turma_id: int) -> dict:
+    turma = session.get(Turma, turma_id)
+
+    if turma is None:
+        raise HTTPException(status_code=404, detail="Turma não encontrada")
+
+    ocupadas = contar_vagas_ocupadas(session, turma_id)
+
+    disponiveis = max(0, turma.vagas - ocupadas)
+
+    return{
+        "vagas": turma.vagas,
+        "vagas_ocupadas": ocupadas,
+        "vagas_disponiveis": disponiveis
+    }
