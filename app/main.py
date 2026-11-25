@@ -4,6 +4,7 @@ import time
 from app import models
 from fastapi import FastAPI, Request
 from app.database import create_db_and_tables
+from app.routers import estudantes, professores
 
 logging.basicConfig(
     level=logging.INFO,
@@ -17,6 +18,9 @@ app = FastAPI(
     description="API para gestão acadêmica",
     version="1.0.0"
 )
+
+app.include_router(professores.router)
+app.include_router(estudantes.router)
 
 @app.on_event("startup")
 def on_startup():
