@@ -91,6 +91,9 @@ def cancelar(session: Session, matricula_id: int) -> Matricula:
 
 def lancar_desempenho(session: Session, matricula_id: int, nota: float | None, 
                       frequencia: float | None) -> Matricula:
+    if nota is None and frequencia is None:
+        raise HTTPException(status_code=400, detail="Nota ou frequencia não passadas")
+    
     matricula = session.get(Matricula, matricula_id)
 
     if matricula is None:
@@ -99,10 +102,16 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
     if matricula.status != StatusMatricula.ATIVA:
         raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ter notas e frequencia lançadas")
     
-    if nota is not None and nota >= 0.0 and nota <= 10.0:
+    if nota is not None:
+        if nota >= 0.0 or nota <= 10.0:
+            raise HTTPException(status_code=400, detail="A nota deve estar entre 0 e 10")
+        
         matricula.nota = nota
 
-    if frequencia is not None and frequencia >= 0.0 and frequencia <= 100.0:
+    if frequencia is not None:
+        if frequencia >= 0.0 and frequencia <= 100.0:
+            raise HTTPException(status_code=400, detail="A frequencia deve estar entre 0 e 100%")
+        
         matricula.frequencia = frequencia
 
     session.add(matricula)
