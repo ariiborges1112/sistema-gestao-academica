@@ -36,3 +36,10 @@ def criar_turma(dados: TurmaCreate, session: Session = Depends(get_session)):
 def listar_turmas(session: Session = Depends(get_session)):
     consulta = select(Turma).order_by(Turma.periodo, Turma.codigo_turma)
     return [_montar_turma_read(session, turma) for turma in session.exec(consulta).all()]
+
+@router.get("/{turma_id}", response_model=TurmaRead)
+def buscar_turma(turma_id: int, session: Session = Depends(get_session)):
+    turma = session.get(Turma, turma_id)
+    if turma is None:
+        raise HTTPException(status_code=404, detail="Turma não encontrada.")
+    return _montar_turma_read(session, turma)
