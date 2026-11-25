@@ -110,3 +110,26 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
     session.refresh(matricula)
 
     return matricula
+
+def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
+    matricula = session.get(Matricula, matricula_id)
+
+    if matricula is None:
+        raise HTTPException(status_code=404, detail="Matricula inexistente")
+    
+    if matricula.status == StatusMatricula.ATIVA:
+        raise HTTPException(status_code=409, detail="Apenas matriculas ativas podem ser canceladas")
+
+    if matricula.nota is None or matricula.frequencia is None:
+        raise HTTPException(status_code=400, detail="A nota ou/e a frequencia ainda não foram lançadas")
+
+    if matricula.nota >= NOTA_MINIMA and matricula.frequencia >= FREQUENCIA_MINIMA:
+        matricula.status = StatusMatricula.APROVADA
+    else:
+        matricula.status = StatusMatricula.REPROVADA
+
+    session.add(matricula)
+    session.commit()
+    session.refresh(matricula)
+
+    return matricula
