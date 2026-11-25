@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from sqlmodel import Session, select, func
 from app.models import Estudante, Matricula, StatusMatricula, Turma, Disciplina, Professor
 from app.schemas.coordenacao import OfertaPeriodoRead, ResultadoTurmaRead
+from app.services.matricula_service import contar_vagas_ocupadas
 
 def listar_estudantes_da_turma(session: Session, turma_id: int, 
                                status: StatusMatricula | None = None) -> list[Estudante]:
@@ -23,17 +24,61 @@ def listar_estudantes_da_turma(session: Session, turma_id: int,
 
     return list(session.exec(consulta).all())
 
-#def resultados_da_turma(session: Session, turma_id: int) -> ResultadoTurmaRead:
+def resultados_da_turma(session: Session, turma_id: int) -> ResultadoTurmaRead:
     turma = session.get(Turma, turma_id)
 
     if turma is None:
         raise HTTPException(status_code=404, detail="Turma não encontrada")
 
     consulta = (
-        select(Matricula.status),
-        func.count()
+        select(Matricula.status, func.count())
         .where(Matricula.turma_id == turma_id)
         .group_by(Matricula.status)
     )
 
-    status = []
+    contagem = {
+        StatusMatricula.APROVADA: 0,
+        StatusMatricula.REPROVADA: 0,
+        StatusMatricula.CANCELADA: 0,
+        StatusMatricula.ATIVA: 0
+    }
+
+    return ResultadoTurmaRead(
+    turma_id=turma.id,
+    codigo_turma=turma.codigo_turma,
+    periodo=turma.periodo,
+    aprovados=contagem[StatusMatricula.APROVADA],
+    reprovados=contagem[StatusMatricula.REPROVADA],
+    cancelados=contagem[StatusMatricula.CANCELADA],
+    ativos=contagem[StatusMatricula.ATIVA],
+    total_matriculas=sum(contagem.values()),
+    )
+
+def listar_oferta_do_periodo(session: Session, periodo: str) -> list[OfertaPeriodoRead]:
+    consulta = (
+        select(Turma, Disciplina, Professor)
+        .join(Disciplina, Disciplina.id == Turma.disciplina_id)
+        .join(Professor, Professor.id == Turma.professor_id)
+        .where(Turma.periodo == periodo)
+        .order_by(Disciplina.codigo, Turma.codigo_turma)
+    )
+
+    linhas = session.exec(consulta).all()
+    ofertas: list[OfertaPeriodoRead] = []
+
+    for turma, disciplina, professor in linhas:
+        ofertas.append(
+            OfertaPeriodoRead(
+                turma_id=turma.id,
+                periodo=turma.periodo,
+                codigo_disciplina=disciplina.codigo,
+                nome_disciplina=disciplina.nome,
+                codigo_turma=turma.codigo_turma,
+                horario=turma.horario,
+                professor=professor.nome,
+                vagas_totais=turma.vagas,
+                vagas_ocupadas=contar_vagas_ocupadas(session, turma.id),
+            )
+        )
+
+    return ofertas
