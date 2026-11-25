@@ -163,9 +163,16 @@ def obter_vagas(session: Session, turma_id: int) -> dict:
 
 def listar_matriculas(session: Session, estudante_id: int | None = None,
                       turma_id: int | None = None, periodo: str | None = None,
-                      status: StatusMatricula | None = None) -> list[Matricula]:
-    consulta = select(Matricula)
+                      status: StatusMatricula | None = None, limite: int = 20,
+                      deslocamento: int = 0) -> list[Matricula]:
+    if limite < 1 or limite > 100:
+        raise HTTPException(status_code=400, detail="O limite deve estar entre 1 e 100")
 
+    if deslocamento < 0:
+        raise HTTPException(status_code=400, detail="O deslocamento não pode ser negativo")
+
+    consulta = select(Matricula)
+    
     if estudante_id is not None:
         consulta = consulta.where(Matricula.estudante_id == estudante_id)
 
@@ -180,4 +187,6 @@ def listar_matriculas(session: Session, estudante_id: int | None = None,
             Turma.periodo == periodo
         )
 
+    consulta = consulta.order_by(Matricula.id).offset(deslocamento).limit(limite)
+    
     return list(session.exec(consulta).all())
