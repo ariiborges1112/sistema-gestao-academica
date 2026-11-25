@@ -5,3 +5,4 @@ from app.schemas.matricula import MatriculaCreate, MatriculaDesempenhoUpdate, Ma
 from app.schemas.professor import ProfessorCreate, ProfessorUpdate, ProfessorRead
 from app.schemas.turma import TurmaCreate, TurmaUpdate, TurmaRead
 from app.schemas.historico import ItemHistoricoRead, HistoricoEstudanteRead
+from app.schemas.coordenacao import OfertaPeriodoRead, ResultadoTurmaRead
