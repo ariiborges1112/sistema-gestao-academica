@@ -11,6 +11,12 @@ STATUS_QUE_OCUPAM_VAGA = (
 NOTA_MINIMA = 7.0
 FREQUENCIA_MINIMA = 75.0 # em percentual
 
+def _tentar_buscar_matricula(session: Session, matricula_id: int) -> Matricula:
+    matricula = session.get(Matricula, matricula_id)
+    
+    if matricula is None:
+        raise HTTPException(status_code=404, detail="Matrícula inexistente")
+
 def contar_vagas_ocupadas(session: Session, turma_id: int) -> int:
     consulta = (
         select(func.count())
@@ -71,8 +77,8 @@ def matricular(session: Session, estudante_id: int, turma_id: int,) -> Matricula
     
     return nova_matricula
 
-def cancelar(session: Session, matricula_id: int) -> Matricula:
-    matricula = session.get(Matricula, matricula_id)
+def cancelar_matricula(session: Session, matricula_id: int) -> Matricula:
+    matricula = _tentar_buscar_matricula(session, matricula_id)
 
     if matricula is None:
         raise HTTPException(status_code=404, detail="Matricula inexistente")
@@ -94,7 +100,7 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
     if nota is None and frequencia is None:
         raise HTTPException(status_code=400, detail="Nota ou frequencia não passadas")
     
-    matricula = session.get(Matricula, matricula_id)
+    matricula = _tentar_buscar_matricula(session, matricula_id)
 
     if matricula is None:
         raise HTTPException(status_code=404, detail="Matricula inexistente")
@@ -121,7 +127,7 @@ def lancar_desempenho(session: Session, matricula_id: int, nota: float | None,
     return matricula
 
 def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
-    matricula = session.get(Matricula, matricula_id)
+    matricula = _tentar_buscar_matricula(session, matricula_id)
 
     if matricula is None:
         raise HTTPException(status_code=404, detail="Matricula inexistente")
@@ -142,3 +148,4 @@ def encerrar_matricula(session: Session, matricula_id: int) -> Matricula:
     session.refresh(matricula)
 
     return matricula
+
