@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
-
 from app.database import get_session
-rom app.models import Disciplina, Matricula, Professor, Turma
+from app.models import Disciplina, Matricula, Professor, StatusMatricula, Turma
+from app.schemas.estudante import EstudanteRead
 from app.schemas.turma import TurmaCreate, TurmaRead, TurmaUpdate
+from app.services.coordenacao_service import listar_estudantes_da_turma
 from app.services.matricula_service import contar_vagas_ocupadas
 
 router = APIRouter(prefix="/turmas", tags=["Turmas"])
@@ -109,3 +110,11 @@ def remover_turma(turma_id: int, session: Session = Depends(get_session)):
             status_code=409,
             detail="Não é possível remover a turma pois existem registros vinculados a ela.",
         )
+
+@router.get("/{turma_id}/estudantes", response_model=list[EstudanteRead])
+def listar_estudantes_matriculados(
+    turma_id: int,
+    status_matricula: StatusMatricula | None = Query(default=None, alias="status"),
+    session: Session = Depends(get_session),
+):
+    return listar_estudantes_da_turma(session, turma_id, status_matricula)
