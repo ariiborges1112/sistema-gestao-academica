@@ -1,3 +1,4 @@
+from app.config import settings
 import logging
 import os
 import time 
@@ -17,9 +18,9 @@ logging.basicConfig(
 logger = logging.getLogger("Gestão Acadêmica")
 
 app = FastAPI(
-    title="Gestão Acadêmica",
+    title=settings.APP_TITLE,
     description="API para gestão acadêmica",
-    version="1.0.0"
+    version=settings.APP_VERSION,
 )
 
 app.include_router(professores.router)
