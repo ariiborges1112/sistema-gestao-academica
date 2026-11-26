@@ -6,6 +6,9 @@ from fastapi import FastAPI, Request
 from app.database import create_db_and_tables
 from app.routers import coordenacao, cursos, disciplinas, estudantes, professores, turmas
 
+from app.routers import cursos
+from app.routers import matriculas
+
 logging.basicConfig(
     level=logging.INFO,
     format= "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
@@ -25,6 +28,7 @@ app.include_router(cursos.router)
 app.include_router(disciplinas.router)
 app.include_router(turmas.router)
 app.include_router(coordenacao.router)
+app.include_router(matriculas.router)
 
 @app.on_event("startup")
 def on_startup():
