@@ -27,3 +27,10 @@ def alocar_professor_turma(
         return coordenacao_service.alocar_professor(session, turma_id, dados.professor_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/turmas/{turma_id}/encerrar", response_model=FechamentoTurmaResponse)
+def encerrar_turma(turma_id: int, session: Session = Depends(get_session)):
+    try:
+        return coordenacao_service.encerrar_turma(session, turma_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
