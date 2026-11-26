@@ -37,3 +37,12 @@ def atualizar_matricula(matricula_id: int, dados: MatriculaUpdate, session: Sess
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.delete("/{matricula_id}", status_code=204)
+def cancelar_matricula(matricula_id: int, session: Session = Depends(get_session)):
+    try:
+        matricula_service.cancelar_matricula(session, matricula_id)
+        return None
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    
