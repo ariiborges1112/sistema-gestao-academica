@@ -35,7 +35,8 @@ def listar_disciplinas(session: Session = Depends(get_session)):
     return list(session.exec(consulta).all())
 
 @router.get("/{disciplina_id}", response_model=DisciplinaRead)
-def buscar_disciplina(disciplina_id: int, session: Session = Depends(get_session)):
+def buscar_disciplina(disciplina_id: int, session: Session = Depends(get_session)
+):
     disciplina = session.get(Disciplina, disciplina_id)
     if disciplina is None:
         raise HTTPException(status_code=404, detail="Disciplina não encontrada.")

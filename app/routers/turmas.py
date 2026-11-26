@@ -87,7 +87,8 @@ def atualizar_turma(
     return _montar_turma_read(session, turma)
 
 @router.delete("/{turma_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remover_turma(turma_id: int, session: Session = Depends(get_session)):
+def remover_turma(turma_id: int, session: Session = Depends(get_session)
+):
     turma = session.get(Turma, turma_id)
     if turma is None:
         raise HTTPException(status_code=404, detail="Turma não encontrada.")
@@ -115,7 +116,8 @@ def remover_turma(turma_id: int, session: Session = Depends(get_session)):
 def listar_estudantes_matriculados(
     turma_id: int,
     status_matricula: StatusMatricula | None = Query(default=None, alias="status"),
-    session: Session = Depends(get_session),):
+    session: Session = Depends(get_session),
+):
     return listar_estudantes_da_turma(session, turma_id, status_matricula)
 
 @router.get("/{turma_id}/vagas")
