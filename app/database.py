@@ -1,5 +1,6 @@
 import os
 from sqlmodel import SQLModel, create_engine, Session 
+from app.config import settings
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./academica.db")
 

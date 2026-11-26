@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     APP_TITLE: str = "Sistema de Gestão Acadêmica"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",
