@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import Disciplina, Professor, Turma
+rom app.models import Disciplina, Matricula, Professor, Turma
 from app.schemas.turma import TurmaCreate, TurmaRead, TurmaUpdate
 from app.services.matricula_service import contar_vagas_ocupadas
 
@@ -83,3 +84,28 @@ def atualizar_turma(
     session.commit()
     session.refresh(turma)
     return _montar_turma_read(session, turma)
+
+@router.delete("/{turma_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remover_turma(turma_id: int, session: Session = Depends(get_session)):
+    turma = session.get(Turma, turma_id)
+    if turma is None:
+        raise HTTPException(status_code=404, detail="Turma não encontrada.")
+
+    matricula_vinculada = session.exec(
+        select(Matricula).where(Matricula.turma_id == turma_id)
+    ).first()
+    if matricula_vinculada is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Não é possível remover a turma pois existem matrículas vinculadas a ela.",
+        )
+
+    session.delete(turma)
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Não é possível remover a turma pois existem registros vinculados a ela.",
+        )
