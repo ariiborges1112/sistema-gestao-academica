@@ -14,3 +14,9 @@ def realizar_matricula(dados: MatriculaCreate, session: Session = Depends(get_se
         return matricula_service.matricular_estudante(session, dados)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/", response_model=list[MatriculaRead])
+def listar_matriculas(session: Session = Depends(get_session)):
+    return session.exec(select(Matricula)).all()
+
