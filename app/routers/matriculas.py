@@ -11,7 +11,11 @@ router = APIRouter(prefix="/matriculas", tags=["Matricula"])
 @router.post("/", response_model=MatriculaRead, status_code=201)
 def realizar_matricula(dados: MatriculaCreate, session: Session = Depends(get_session)):
     try:
-        return matricula_service.matricular_estudante(session, dados)
+        return matricula_service.matricular(
+        session=session,
+        estudante_id=dados.estudante_id,
+        turma_id=dados.turma_id,
+)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
