@@ -27,3 +27,13 @@ def buscar_matricula(matricula_id: int, session: Session = Depends(get_session))
     if matricula is None:
         raise HTTPException(status_code=404, detail="Matricula não encontrada")
     return matricula
+
+
+@router.patch("/{matricula_id}", response_model=MatriculaRead)
+def atualizar_matricula(matricula_id: int, dados: MatriculaUpdate, session: Session = Depends(get_session)):
+    try: 
+        return matricula_service.atualizar_matricula(session, matricula_id, dados)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
