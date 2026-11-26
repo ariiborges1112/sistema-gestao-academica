@@ -6,7 +6,7 @@ from app.models import Disciplina, Matricula, Professor, StatusMatricula, Turma
 from app.schemas.estudante import EstudanteRead
 from app.schemas.turma import TurmaCreate, TurmaRead, TurmaUpdate
 from app.services.coordenacao_service import listar_estudantes_da_turma
-from app.services.matricula_service import contar_vagas_ocupadas
+from app.services.matricula_service import contar_vagas_ocupadas, obter_vagas
 
 router = APIRouter(prefix="/turmas", tags=["Turmas"])
 
@@ -115,6 +115,9 @@ def remover_turma(turma_id: int, session: Session = Depends(get_session)):
 def listar_estudantes_matriculados(
     turma_id: int,
     status_matricula: StatusMatricula | None = Query(default=None, alias="status"),
-    session: Session = Depends(get_session),
-):
+    session: Session = Depends(get_session),):
     return listar_estudantes_da_turma(session, turma_id, status_matricula)
+
+@router.get("/{turma_id}/vagas")
+def consultar_vagas(turma_id: int, session: Session = Depends(get_session)):
+    return obter_vagas(session, turma_id)
