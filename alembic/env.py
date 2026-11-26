@@ -4,7 +4,14 @@ from sqlmodel import SQLModel
 from alembic import context
 from app.models import Curso, Disciplina, Estudante, Matricula, Professor, Turma
 
+from app.config import settings
+from app import models
+
+
 config = context.config
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
