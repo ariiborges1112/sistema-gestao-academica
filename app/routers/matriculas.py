@@ -20,3 +20,10 @@ def realizar_matricula(dados: MatriculaCreate, session: Session = Depends(get_se
 def listar_matriculas(session: Session = Depends(get_session)):
     return session.exec(select(Matricula)).all()
 
+
+@router.get("/{matricula_id}", response_model=MatriculaRead)
+def buscar_matricula(matricula_id: int, session: Session = Depends(get_session)):
+    matricula = session.get(Matricula, matricula_id)
+    if matricula is None:
+        raise HTTPException(status_code=404, detail="Matricula não encontrada")
+    return matricula
